@@ -81,6 +81,13 @@ Los archivos de unidad usan las factories de `data/builders.ts` (`mc`, `fill`, `
 
 ## Comandos
 
-- `npm run dev` — servidor de desarrollo.
+- `npm run dev` — servidor de desarrollo (con `host: true`: accesible desde la red local).
 - `npm run build` — type-check (`tsc -b`) + build de producción. Úsalo como verificación de tipos.
 - `npm run lint` — ESLint.
+
+## Despliegue
+
+- **Producción**: GitHub Pages en https://dtug21.github.io/lingo/ — repo https://github.com/Dtug21/lingo.
+- Cada push a `main` despliega automáticamente vía `.github/workflows/deploy.yml` (build → `dist/` → Pages).
+- `vite.config.ts` usa `base: '/lingo/'` solo en producción; el router toma `basename` de `import.meta.env.BASE_URL`. Si se renombra el repo hay que actualizar ese `base`.
+- SPA fallback: el workflow copia `index.html` a `404.html` para que las rutas profundas funcionen en Pages.
