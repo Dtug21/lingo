@@ -1,0 +1,88 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', ui-rounded, system-ui, -apple-system, sans-serif;
+
+  /* Verde de marca: acciones primarias y aciertos */
+  --color-brand-50: #f0fdf2;
+  --color-brand-100: #dcfce3;
+  --color-brand-200: #bbf7c9;
+  --color-brand-300: #86efa5;
+  --color-brand-400: #3ddc68;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+
+  /* Coral: errores y corazones */
+  --color-coral-100: #ffe4e9;
+  --color-coral-300: #ffa3b5;
+  --color-coral-400: #ff7d95;
+  --color-coral-500: #ff4b6e;
+  --color-coral-600: #e63b5d;
+  --color-coral-700: #c22a4a;
+
+  /* Amarillo sol: racha y XP */
+  --color-sunshine-100: #fff7d6;
+  --color-sunshine-300: #ffe066;
+  --color-sunshine-400: #ffd333;
+  --color-sunshine-500: #ffc800;
+  --color-sunshine-600: #e6ac00;
+
+  --animate-pop: pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-shake: shake 0.4s ease-in-out both;
+  --animate-slide-up: slide-up 0.3s ease-out both;
+  --animate-fade-in: fade-in 0.35s ease-out both;
+  --animate-heart-break: heart-break 0.6s ease-in both;
+  --animate-bounce-soft: bounce-soft 1.6s ease-in-out infinite;
+
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+  }
+  @keyframes slide-up {
+    0% { transform: translateY(16px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  @keyframes heart-break {
+    0% { transform: scale(1); opacity: 1; }
+    30% { transform: scale(1.4); }
+    100% { transform: scale(0) rotate(20deg); opacity: 0; }
+  }
+  @keyframes bounce-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+}
+
+@keyframes confetti-fall {
+  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0.6; }
+}
+
+html {
+  background-color: #f7fbf7;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: #29323d;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Foco visible consistente para navegación por teclado */
+:focus-visible {
+  outline: 3px solid var(--color-brand-400);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
