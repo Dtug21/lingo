@@ -4,9 +4,11 @@ Aplicación web estilo Duolingo para hispanohablantes que aprenden inglés. Sin 
 
 ## Características
 
-- **5 unidades temáticas** (saludos, comida, viajes, trabajo, tiempo/clima) con 21 lecciones y ~170 ejercicios.
-- **6 tipos de ejercicio**: opción múltiple, completar espacio, traducción libre, emparejar palabras, ordenar palabras y escuchar-y-elegir (texto-a-voz con la Web Speech API).
-- **Gamificación**: racha diaria con protectores ("freezes"), XP y niveles, 5 vidas que se regeneran cada 30 min, mapa de unidades con desbloqueo lineal y 9 logros.
+- **7 unidades temáticas** (saludos, comida, viajes, trabajo, tiempo/clima, conversación cotidiana e inglés profesional) con 29 lecciones y ~230 ejercicios.
+- **7 tipos de ejercicio**: opción múltiple, completar espacio, traducción libre, emparejar palabras, ordenar palabras, escuchar-y-elegir (texto-a-voz) y **pronunciación** (hablas al micrófono y la app evalúa con reconocimiento de voz).
+- **Repaso inteligente**: repetición espaciada de lo que fallas (intervalos 1/3/7/14/30 días). No arriesga corazones y al terminar recupera uno.
+- **Meta diaria de XP** configurable (pensada para micro-sesiones de 5-10 min) con barra de progreso en el Home.
+- **Gamificación**: racha diaria con protectores ("freezes"), XP y niveles, 5 vidas que se regeneran cada 30 min, mapa de unidades con desbloqueo lineal y 11 logros.
 - **Accesible y responsive**: atajos de teclado (1–9 para opciones, Enter para comprobar/continuar), `aria-labels`, foco visible, diseño mobile-first.
 
 ## Instalación
@@ -55,7 +57,8 @@ El contenido vive en `src/data/lessons/`, separado de los componentes. Para aña
 
 ### Reglas de juego
 
-- **XP**: 10 por ejercicio correcto al primer intento, +20 de bonus por lección perfecta.
+- **XP**: 10 por ejercicio correcto al primer intento, +20 de bonus por lección perfecta. En repaso: 5 XP por ejercicio.
+- **Repaso**: los ejercicios fallados se agendan con repetición espaciada; el botón "Repaso" del Home muestra cuántos hay pendientes y sirve también como práctica libre.
 - **Vidas**: máximo 5; se pierde 1 por error; regenera 1 cada 30 minutos (cálculo perezoso, sin timers persistentes). Sin vidas no se puede iniciar una lección.
 - **Racha**: un día cuenta si completas al menos una lección. Si faltas un día y tienes un protector 🧊, se consume automáticamente. Empiezas con 1 y ganas otro por cada hito de 7 días (máx. 2).
 - **Progresión**: lineal estricta — cada lección desbloquea la siguiente; completar una unidad abre la próxima.

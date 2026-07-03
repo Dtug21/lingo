@@ -3,6 +3,8 @@ import type { Lesson, Unit } from '../types';
 import { UNITS } from '../data/lessons';
 import { useProgressStore } from '../store/useProgressStore';
 import { isLessonUnlocked, isUnitUnlocked } from '../lib/unlock';
+import { countDue } from '../lib/review';
+import { toLocalDateKey } from '../lib/dates';
 import { UNIT_PALETTE } from '../components/ui/unitColors';
 import { TopBar } from '../components/ui/TopBar';
 
@@ -17,6 +19,7 @@ export function HomePage() {
       <TopBar />
       <main className="mx-auto max-w-xl px-4 pb-16">
         <h1 className="sr-only">Mapa de unidades</h1>
+        <DailyPanel />
         {UNITS.map((unit, unitIndex) => (
           <UnitSection
             key={unit.id}
@@ -27,6 +30,70 @@ export function HomePage() {
         ))}
       </main>
     </>
+  );
+}
+
+/** Meta diaria de XP + acceso al repaso inteligente. */
+function DailyPanel() {
+  const navigate = useNavigate();
+  const dailyXp = useProgressStore((s) => s.dailyXp);
+  const dailyGoal = useProgressStore((s) => s.dailyGoal);
+  const reviewRecords = useProgressStore((s) => s.reviewRecords);
+  const completedLessons = useProgressStore((s) => s.completedLessons);
+
+  const todayKey = toLocalDateKey(new Date());
+  const todayXp = dailyXp.date === todayKey ? dailyXp.amount : 0;
+  const ratio = Math.min(1, todayXp / dailyGoal);
+  const due = countDue(reviewRecords, todayKey);
+  const hasContent = Object.keys(completedLessons).length > 0;
+
+  return (
+    <section aria-label="Meta diaria y repaso" className="mt-4 flex flex-col gap-3 sm:flex-row">
+      <div className="flex-1 rounded-3xl border-2 border-sunshine-400 bg-sunshine-100 p-4">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-extrabold uppercase tracking-widest text-sunshine-600">
+            Meta diaria
+          </p>
+          <p className="text-sm font-black text-gray-700">
+            {ratio >= 1 ? '¡Cumplida! 🎉' : `${todayXp}/${dailyGoal} XP`}
+          </p>
+        </div>
+        <div
+          role="progressbar"
+          aria-label="Progreso de la meta diaria"
+          aria-valuenow={todayXp}
+          aria-valuemin={0}
+          aria-valuemax={dailyGoal}
+          className="mt-2 h-3 overflow-hidden rounded-full bg-sunshine-300/50"
+        >
+          <div
+            className="h-full rounded-full bg-sunshine-500 transition-all duration-500"
+            style={{ width: `${ratio * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {hasContent && (
+        <button
+          type="button"
+          onClick={() => navigate('/review')}
+          className="flex items-center justify-between gap-3 rounded-3xl border-2 border-b-4 border-teal-500 bg-teal-400 p-4 text-left text-white transition-all duration-100 hover:bg-teal-300 active:translate-y-[2px] active:border-b-2 cursor-pointer sm:w-44"
+        >
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-widest text-teal-50">
+              Repaso
+            </p>
+            <p className="text-sm font-black">
+              {due > 0 ? `${due} pendiente${due === 1 ? '' : 's'}` : 'Práctica libre'}
+            </p>
+            <p className="text-xs font-bold text-teal-50">+1 ❤️ al terminar</p>
+          </div>
+          <span className="text-3xl" aria-hidden="true">
+            🧠
+          </span>
+        </button>
+      )}
+    </section>
   );
 }
 

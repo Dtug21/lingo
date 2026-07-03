@@ -57,18 +57,35 @@ Exercise (unión discriminada por `type`):
   match-pairs     { pairs: {left (EN), right (ES)}[] }
   word-order      { prompt (frase ES), words[] (tokens + distractores), correct }
   listen-choose   { ttsText (se pronuncia con TTS), options[], correctIndex }
+  speak           { text (EN a leer en voz alta), translation (ES) }  // reconocimiento de voz
 ```
 
 Los archivos de unidad usan las factories de `data/builders.ts` (`mc`, `fill`, `translate`, `match`, `order`, `listen`, `lesson`, que asignan ids automáticamente). Para agregar contenido: crear/editar un archivo de unidad y registrarlo en el índice; no hay que tocar nada más.
 
 ## Decisiones de producto (confirmadas por el usuario)
 
-- **Vidas**: máx. 5; se pierde 1 por respuesta incorrecta; regenera 1 cada **30 minutos** (cálculo perezoso).
-- **XP**: **10 XP** por ejercicio correcto al primer intento + **20 XP** de bonus por lección perfecta (0 errores).
+- **Perfil del usuario**: principiante A1-A2, objetivos trabajo/profesional + conversación general, micro-sesiones de 5-10 min diarios. El contenido y las features se diseñan para ese perfil.
+- **Vidas**: máx. 5; se pierde 1 por respuesta incorrecta; regenera 1 cada **30 minutos** (cálculo perezoso). Completar un repaso recupera 1 corazón.
+- **XP**: **10 XP** por ejercicio correcto al primer intento + **20 XP** de bonus por lección perfecta (0 errores). En repaso: **5 XP** por ejercicio.
 - **Progresión**: **lineal estricta** — cada lección desbloquea la siguiente; completar todas las lecciones de una unidad desbloquea la unidad siguiente.
 - **Idioma UI**: **español**; el contenido a aprender es inglés.
-- **Racha**: día activo = completar ≥1 lección. Si falta 1 día y hay freeze disponible, se consume automáticamente y la racha sobrevive. El usuario parte con 1 freeze y gana 1 por cada hito de racha de 7 días (máx. acumulable: 2).
+- **Racha**: día activo = completar ≥1 lección o repaso. Si falta 1 día y hay freeze disponible, se consume automáticamente y la racha sobrevive. El usuario parte con 1 freeze y gana 1 por cada hito de racha de 7 días (máx. acumulable: 2).
 - **Niveles**: nivel = f(XP total) con curva suave (`lib/xp.ts`); son cosméticos (perfil), no bloquean contenido.
+- **Meta diaria**: XP objetivo por día (10/30/50/100, default 30), configurable en el perfil; barra de progreso en el Home.
+
+## Repaso inteligente (repetición espaciada)
+
+- `lib/review.ts` — lógica pura. Los ejercicios fallados en lecciones entran al ciclo con `due` = mañana. En repaso, acertar sube el `level` y aleja el próximo repaso (`1, 3, 7, 14, 30` días); fallar reinicia a nivel 0.
+- La sesión (`/review`, `ReviewPage`) toma hasta 10 ejercicios: primero los vencidos, y rellena con ejercicios al azar de lecciones completadas ("práctica libre").
+- El repaso **no usa corazones** (no hay fallo por vidas) y al terminar **restaura 1 corazón**. Cuenta para la racha y la meta diaria.
+- Estado en el store: `reviewRecords: Record<exerciseId, {due, level}>`, `reviewsCompleted`.
+
+## Pronunciación (ejercicio `speak`)
+
+- `hooks/useSpeechRecognition.ts` envuelve la Web Speech API (`SpeechRecognition`/`webkitSpeechRecognition`, en-US). Tipos ambient en `src/speech-recognition.d.ts` (no están completos en lib.dom).
+- Evaluación en `lib/similarity.ts`: proporción de palabras del objetivo presentes en la transcripción; pasa con ≥ 60 %.
+- Fallbacks importantes: navegador sin soporte (Firefox) o botón "No puedo hablar ahora" → el ejercicio cuenta como práctica (correcto, sin penalizar). Funciona solo en HTTPS/localhost.
+- Los ejercicios `speak` están en las unidades 6 (Conversación) y 7 (Inglés profesional).
 
 ## Dirección de diseño
 

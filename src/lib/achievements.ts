@@ -6,6 +6,7 @@ export interface AchievementSnapshot {
   xp: number;
   streakCount: number;
   completedLessons: Record<string, LessonRecord>;
+  reviewsCompleted: number;
   units: Unit[];
 }
 
@@ -27,6 +28,10 @@ function isEarned(id: string, s: AchievementSnapshot): boolean {
       return s.xp >= 500;
     case 'lessons-10':
       return lessonCount >= 10;
+    case 'first-review':
+      return s.reviewsCompleted >= 1;
+    case 'reviews-10':
+      return s.reviewsCompleted >= 10;
     case 'first-unit':
       return s.units.some((u) => isUnitCompleted(u, s.completedLessons));
     case 'all-units':

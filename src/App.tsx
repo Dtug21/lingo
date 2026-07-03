@@ -4,6 +4,7 @@ import { HomePage } from './pages/HomePage';
 import { LessonPage } from './pages/LessonPage';
 import { ResultsPage } from './pages/ResultsPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ReviewPage } from './pages/ReviewPage';
 import { useProgressStore } from './store/useProgressStore';
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/lesson/:unitId/:lessonId" element={<LessonPage />} />
+      <Route path="/review" element={<ReviewPage />} />
       <Route path="/results" element={<ResultsPage />} />
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="*" element={<HomePage />} />

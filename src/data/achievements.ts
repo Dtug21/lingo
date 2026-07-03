@@ -44,6 +44,18 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     icon: '🏃',
   },
   {
+    id: 'first-review',
+    title: 'Memoria fresca',
+    description: 'Completa tu primer repaso',
+    icon: '🧠',
+  },
+  {
+    id: 'reviews-10',
+    title: 'Nunca lo olvido',
+    description: 'Completa 10 repasos',
+    icon: '🐘',
+  },
+  {
     id: 'first-unit',
     title: 'Capítulo cerrado',
     description: 'Completa una unidad entera',

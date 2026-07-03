@@ -11,8 +11,17 @@ import { HeartsDisplay } from '../components/ui/HeartsDisplay';
 import { ChunkyButton } from '../components/ui/ChunkyButton';
 
 export function ProfilePage() {
-  const { xp, streak, hearts, completedLessons, unlockedAchievements, resetProgress } =
-    useProgressStore();
+  const {
+    xp,
+    streak,
+    hearts,
+    completedLessons,
+    unlockedAchievements,
+    reviewsCompleted,
+    dailyGoal,
+    setDailyGoal,
+    resetProgress,
+  } = useProgressStore();
   const now = useNow(1000);
 
   const level = levelForXp(xp);
@@ -105,12 +114,46 @@ export function ProfilePage() {
           </section>
         </div>
 
+        {/* Meta diaria */}
+        <section
+          aria-label="Meta diaria"
+          className="rounded-3xl border-2 border-gray-200 bg-white p-4"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-black text-gray-800">Meta diaria</h2>
+              <p className="text-xs font-semibold text-gray-400">
+                XP objetivo por día — pensado para sesiones cortas
+              </p>
+            </div>
+            <div className="flex gap-2" role="radiogroup" aria-label="Meta diaria de XP">
+              {[10, 30, 50, 100].map((goal) => (
+                <button
+                  key={goal}
+                  type="button"
+                  role="radio"
+                  aria-checked={dailyGoal === goal}
+                  onClick={() => setDailyGoal(goal)}
+                  className={`rounded-xl border-2 border-b-4 px-3 py-1 text-sm font-extrabold transition-all duration-100 cursor-pointer ${
+                    dailyGoal === goal
+                      ? 'border-sunshine-500 bg-sunshine-100 text-sunshine-600'
+                      : 'border-gray-200 bg-white text-gray-400 hover:bg-gray-50'
+                  }`}
+                >
+                  {goal}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Estadísticas */}
-        <section aria-label="Estadísticas" className="grid grid-cols-3 gap-3">
+        <section aria-label="Estadísticas" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { label: 'XP total', value: xp, icon: '⭐' },
             { label: 'Lecciones', value: `${lessonsDone}/${totalLessons}`, icon: '📗' },
             { label: 'Perfectas', value: perfectCount, icon: '💎' },
+            { label: 'Repasos', value: reviewsCompleted, icon: '🧠' },
           ].map((stat) => (
             <div
               key={stat.label}

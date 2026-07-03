@@ -30,14 +30,24 @@ export function ResultsPage() {
       <Confetti />
 
       <div className="animate-pop text-7xl" aria-hidden="true">
-        {result.perfect ? '🏆' : '🎉'}
+        {result.mode === 'review' ? '🧠' : result.perfect ? '🏆' : '🎉'}
       </div>
       <div>
         <h1 className="text-3xl font-black text-gray-800">
-          {result.perfect ? '¡Lección perfecta!' : '¡Lección completada!'}
+          {result.mode === 'review'
+            ? '¡Repaso completado!'
+            : result.perfect
+              ? '¡Lección perfecta!'
+              : '¡Lección completada!'}
         </h1>
         <p className="mt-1 font-bold text-gray-400">{result.lessonTitle}</p>
       </div>
+
+      {result.heartRestored && (
+        <p className="animate-pop rounded-2xl border-2 border-coral-300 bg-coral-100 px-4 py-2 text-sm font-black text-coral-600">
+          +1 ❤️ recuperado por repasar
+        </p>
+      )}
 
       <div className="flex w-full max-w-sm gap-3">
         <div className="flex-1 rounded-2xl border-2 border-sunshine-400 bg-sunshine-100 p-4">
@@ -45,7 +55,7 @@ export function ResultsPage() {
             XP ganado
           </p>
           <p className="text-3xl font-black text-gray-800">+{result.xpEarned}</p>
-          {result.perfect && (
+          {result.perfect && result.mode === 'lesson' && (
             <p className="text-xs font-bold text-sunshine-600">
               incluye +{PERFECT_LESSON_BONUS} de bonus
             </p>

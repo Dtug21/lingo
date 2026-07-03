@@ -5,6 +5,7 @@ import type {
   ListenChooseExercise,
   MatchPairsExercise,
   MultipleChoiceExercise,
+  SpeakExercise,
   TranslateDirection,
   TranslateExercise,
   WordOrderExercise,
@@ -57,6 +58,10 @@ export function listen(
   correctIndex: number,
 ): Omit<ListenChooseExercise, 'id'> {
   return { type: 'listen-choose', ttsText, options, correctIndex };
+}
+
+export function speak(text: string, translation: string): Omit<SpeakExercise, 'id'> {
+  return { type: 'speak', text, translation };
 }
 
 /** Compone una lección asignando ids estables a cada ejercicio. */

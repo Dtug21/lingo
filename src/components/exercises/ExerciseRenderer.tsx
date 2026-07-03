@@ -7,6 +7,7 @@ import { Translate } from './Translate';
 import { MatchPairs } from './MatchPairs';
 import { WordOrder } from './WordOrder';
 import { ListenChoose } from './ListenChoose';
+import { Speak } from './Speak';
 
 interface ExerciseRendererProps {
   exercise: Exercise;
@@ -35,5 +36,7 @@ export function ExerciseRenderer({
       return <WordOrder exercise={exercise} {...common} />;
     case 'listen-choose':
       return <ListenChoose exercise={exercise} {...common} />;
+    case 'speak':
+      return <Speak exercise={exercise} {...common} />;
   }
 }

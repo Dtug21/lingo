@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { Exercise, Lesson, LessonResult, Unit } from '../types';
+import type { Exercise, LessonResult, SessionMode } from '../types';
 import { calcLessonXp } from '../lib/xp';
+import { REVIEW_XP_PER_EXERCISE } from '../lib/review';
+import { MAX_HEARTS } from '../lib/hearts';
 import { achievementById } from '../data/achievements';
 import { useProgressStore } from '../store/useProgressStore';
 
@@ -13,37 +15,51 @@ interface QueueItem {
   attempt: number;
 }
 
+export interface SessionConfig {
+  mode: SessionMode;
+  exercises: Exercise[];
+  /** Metadatos para el resultado (en repaso: título genérico). */
+  unitId: string;
+  lessonId: string;
+  title: string;
+}
+
 export interface LessonSession {
+  mode: SessionMode;
   current: QueueItem | null;
   phase: SessionPhase;
   lastCorrect: boolean;
-  /** Progreso de la barra: aciertos / total de ítems en cola. */
+  /** Progreso de la barra: ítems superados / total de ítems en cola. */
   done: number;
   total: number;
   hearts: number;
   submit: (correct: boolean) => void;
-  /** Avanza tras el feedback; al terminar registra la lección y navega a /results. */
+  /** Avanza tras el feedback; al terminar registra la sesión y navega a /results. */
   next: () => void;
 }
 
 /**
- * Máquina de estados de una lección: cola de ejercicios → responder →
+ * Máquina de estados de una sesión de ejercicios: cola → responder →
  * feedback → los fallados se re-encolan al final → resultados.
- * Si los corazones llegan a 0 la sesión termina en fallo.
+ * - Modo `lesson`: los errores cuestan corazones; 0 corazones = sesión fallida.
+ * - Modo `review`: sin corazones; al terminar se agenda la repetición espaciada
+ *   y se recupera un corazón.
  */
-export function useLessonSession(unit: Unit, lesson: Lesson): LessonSession {
+export function useLessonSession(config: SessionConfig): LessonSession {
   const navigate = useNavigate();
   const loseOneHeart = useProgressStore((s) => s.loseOneHeart);
   const completeLesson = useProgressStore((s) => s.completeLesson);
+  const completeReview = useProgressStore((s) => s.completeReview);
   const hearts = useProgressStore((s) => s.hearts.count);
 
   const [queue, setQueue] = useState<QueueItem[]>(() =>
-    lesson.exercises.map((exercise) => ({ exercise, attempt: 0 })),
+    config.exercises.map((exercise) => ({ exercise, attempt: 0 })),
   );
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<SessionPhase>('answering');
   const [lastCorrect, setLastCorrect] = useState(false);
-  const failedIds = useRef(new Set<string>());
+  /** Acierto al PRIMER intento por ejercicio (define XP y agenda de repaso). */
+  const firstTryResults = useRef(new Map<string, boolean>());
   const finishedRef = useRef(false);
 
   const current = index < queue.length ? queue[index] : null;
@@ -52,18 +68,24 @@ export function useLessonSession(unit: Unit, lesson: Lesson): LessonSession {
     (correct: boolean) => {
       if (phase !== 'answering' || current === null) return;
       setLastCorrect(correct);
+      const id = current.exercise.id;
+      if (!firstTryResults.current.has(id)) firstTryResults.current.set(id, correct);
+
       if (correct) {
         setPhase('feedback');
         return;
       }
-      failedIds.current.add(current.exercise.id);
       // re-encolar el ejercicio fallado al final
       setQueue((q) => [...q, { exercise: current.exercise, attempt: current.attempt + 1 }]);
-      loseOneHeart();
-      // hearts aún no refleja la pérdida en este render: 1 significa que quedó en 0
-      setPhase(hearts <= 1 ? 'failed' : 'feedback');
+      if (config.mode === 'lesson') {
+        loseOneHeart();
+        // hearts aún no refleja la pérdida en este render: 1 significa que quedó en 0
+        setPhase(hearts <= 1 ? 'failed' : 'feedback');
+      } else {
+        setPhase('feedback');
+      }
     },
-    [phase, current, hearts, loseOneHeart],
+    [phase, current, hearts, loseOneHeart, config.mode],
   );
 
   const next = useCallback(() => {
@@ -75,31 +97,62 @@ export function useLessonSession(unit: Unit, lesson: Lesson): LessonSession {
       return;
     }
     finishedRef.current = true;
-    const totalExercises = lesson.exercises.length;
-    const mistakes = failedIds.current.size;
+
+    const totalExercises = config.exercises.length;
+    const failedIds = [...firstTryResults.current.entries()]
+      .filter(([, correct]) => !correct)
+      .map(([id]) => id);
+    const mistakes = failedIds.length;
     const perfect = mistakes === 0;
-    const xpEarned = calcLessonXp(totalExercises, mistakes);
-    const newIds = completeLesson({ lessonId: lesson.id, xpEarned, perfect });
+
+    let xpEarned: number;
+    let newIds: string[];
+    let heartRestored = false;
+
+    if (config.mode === 'lesson') {
+      xpEarned = calcLessonXp(totalExercises, mistakes);
+      newIds = completeLesson({
+        lessonId: config.lessonId,
+        xpEarned,
+        perfect,
+        failedExerciseIds: failedIds,
+      });
+    } else {
+      xpEarned = (totalExercises - mistakes) * REVIEW_XP_PER_EXERCISE;
+      heartRestored = hearts < MAX_HEARTS;
+      newIds = completeReview({
+        xpEarned,
+        results: Object.fromEntries(firstTryResults.current),
+      });
+    }
+
     const result: LessonResult = {
-      unitId: unit.id,
-      lessonId: lesson.id,
-      lessonTitle: lesson.title,
+      mode: config.mode,
+      unitId: config.unitId,
+      lessonId: config.lessonId,
+      lessonTitle: config.title,
       totalExercises,
       mistakes,
       xpEarned,
       perfect,
       failed: false,
+      heartRestored,
       newAchievements: newIds
         .map(achievementById)
         .filter((a): a is NonNullable<typeof a> => a !== undefined),
     };
     navigate('/results', { state: result, replace: true });
-  }, [phase, index, queue.length, lesson, unit.id, completeLesson, navigate]);
+  }, [phase, index, queue.length, config, hearts, completeLesson, completeReview, navigate]);
 
-  const done = useMemo(() => {
-    // aciertos acumulados = ítems ya superados (los fallados se re-encolan)
-    return index + (phase === 'feedback' && lastCorrect ? 1 : 0);
-  }, [index, phase, lastCorrect]);
-
-  return { current, phase, lastCorrect, done, total: queue.length, hearts, submit, next };
+  return {
+    mode: config.mode,
+    current,
+    phase,
+    lastCorrect,
+    done: index + (phase === 'feedback' && lastCorrect ? 1 : 0),
+    total: queue.length,
+    hearts,
+    submit,
+    next,
+  };
 }

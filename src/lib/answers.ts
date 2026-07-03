@@ -14,6 +14,8 @@ export function correctAnswerText(exercise: Exercise): string {
       return exercise.correct;
     case 'match-pairs':
       return exercise.pairs.map((p) => `${p.left} = ${p.right}`).join(', ');
+    case 'speak':
+      return exercise.text;
   }
 }
 
@@ -32,5 +34,7 @@ export function instructionFor(exercise: Exercise): string {
       return 'Ordena las palabras para formar la oración en inglés';
     case 'listen-choose':
       return 'Escucha y elige lo que oíste';
+    case 'speak':
+      return 'Lee la frase en voz alta';
   }
 }

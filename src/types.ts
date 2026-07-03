@@ -6,7 +6,8 @@ export type ExerciseType =
   | 'translate'
   | 'match-pairs'
   | 'word-order'
-  | 'listen-choose';
+  | 'listen-choose'
+  | 'speak';
 
 interface ExerciseBase {
   id: string;
@@ -66,13 +67,22 @@ export interface ListenChooseExercise extends ExerciseBase {
   correctIndex: number;
 }
 
+export interface SpeakExercise extends ExerciseBase {
+  type: 'speak';
+  /** Frase en inglés que el usuario debe leer en voz alta. */
+  text: string;
+  /** Traducción al español, mostrada como apoyo. */
+  translation: string;
+}
+
 export type Exercise =
   | MultipleChoiceExercise
   | FillBlankExercise
   | TranslateExercise
   | MatchPairsExercise
   | WordOrderExercise
-  | ListenChooseExercise;
+  | ListenChooseExercise
+  | SpeakExercise;
 
 export interface Lesson {
   id: string;
@@ -80,7 +90,7 @@ export interface Lesson {
   exercises: Exercise[];
 }
 
-export type UnitColor = 'green' | 'orange' | 'sky' | 'violet' | 'pink';
+export type UnitColor = 'green' | 'orange' | 'sky' | 'violet' | 'pink' | 'teal' | 'indigo';
 
 export interface Unit {
   id: string;
@@ -122,9 +132,21 @@ export interface AchievementDef {
   icon: string;
 }
 
-// ---------- Sesión de lección ----------
+// ---------- Repaso (repetición espaciada) ----------
+
+export interface ReviewRecord {
+  /** Fecha local YYYY-MM-DD en la que el ejercicio vuelve a estar pendiente. */
+  due: string;
+  /** Nivel de dominio: sube al acertar en repaso, se reinicia al fallar. */
+  level: number;
+}
+
+// ---------- Sesión (lección o repaso) ----------
+
+export type SessionMode = 'lesson' | 'review';
 
 export interface LessonResult {
+  mode: SessionMode;
   unitId: string;
   lessonId: string;
   lessonTitle: string;
@@ -133,5 +155,7 @@ export interface LessonResult {
   xpEarned: number;
   perfect: boolean;
   failed: boolean;
+  /** true si el repaso restauró un corazón. */
+  heartRestored: boolean;
   newAchievements: AchievementDef[];
 }

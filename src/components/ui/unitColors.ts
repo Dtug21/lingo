@@ -39,4 +39,16 @@ export const UNIT_PALETTE: Record<UnitColor, UnitPalette> = {
     nodeText: 'text-pink-500',
     progressText: 'text-pink-100',
   },
+  teal: {
+    banner: 'bg-teal-400 border-teal-600',
+    node: 'bg-teal-400 border-teal-600 hover:bg-teal-300',
+    nodeText: 'text-teal-500',
+    progressText: 'text-teal-100',
+  },
+  indigo: {
+    banner: 'bg-indigo-400 border-indigo-600',
+    node: 'bg-indigo-400 border-indigo-600 hover:bg-indigo-300',
+    nodeText: 'text-indigo-500',
+    progressText: 'text-indigo-100',
+  },
 };
